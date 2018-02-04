@@ -27,20 +27,24 @@ namespace Total.Simulator.WPF
 
         private void SavePrj_Click(object sender, RoutedEventArgs e)
         {
-            var filename = this.BrowseFile(".txt", "TXT Files (*.txt)|*.txt", false);
+            var filename = this.BrowseFile(".tots", "tots Files (*.tots)|*.tots", false);
             if (string.IsNullOrEmpty(filename))
             {
                 return;
             }
+            var json = ObjectDumpingManager.SerializeObject(this.totalSimulator);
+            File.WriteAllText(filename, json);
         }
 
         private void LoadPrj_Click(object sender, RoutedEventArgs e)
         {
-            var filename = this.BrowseFile(".txt", "TXT Files (*.txt)|*.txt");
+            var filename = this.BrowseFile(".tots", "tots Files (*.tots)|*.tots");
             if (string.IsNullOrEmpty(filename))
             {
                 return;
             }
+            this.totalSimulator = ObjectDumpingManager.DeserializeObject<TotalSimulator.TotalSimulator>(File.ReadAllText(filename));
+            this.DisplayDpi();
         }
 
         private void SaveKorButton_Click(object sender, RoutedEventArgs e)
@@ -72,6 +76,11 @@ namespace Total.Simulator.WPF
             }
             this.totalSimulator.SetMeasurements(File.ReadAllText(filename));
             this.WGF.ItemsSource = this.totalSimulator.AllMeasuredWGFPoints;
+            this.DisplayDpi();
+        }
+
+        public void DisplayDpi()
+        {
             if (this.totalSimulator.Errors.Count > 0)
             {
                 this.DataTextBox.Text = string.Join("\n", this.totalSimulator.Errors.ToArray());
@@ -80,7 +89,6 @@ namespace Total.Simulator.WPF
             {
                 this.DataTextBox.Text = this.totalSimulator.GetDpiData();
             }
-            
         }
 
         private void ReadGeosn_Click(object sender, RoutedEventArgs e)
