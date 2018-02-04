@@ -34,7 +34,6 @@ namespace TotalSimulator
 
         public string GetKorData(IEnumerable<Point> wgfPoints)
         {
-
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(" О Б Е К Т : \n Номер Клас      X           Y    Клас   H         Mx     My    Rxy      Mh\n     0  0       0.000       0.000  3    0.0000    0.0    0.0   0.000    0.00\n");
             foreach (var point in wgfPoints)
