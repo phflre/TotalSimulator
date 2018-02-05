@@ -10,16 +10,16 @@ using TotalSimulator.Models;
 
 namespace TotalSimulator
 {
+    [Serializable]
     public class TotalSimulator : ITotalSimulator
     {
         private Regex measureRegex = new Regex(@"^(\d+) {1}(\d+[.]{0,1}\d+) {1}(\d+[.]{0,1}\d+) {0,1}(\d+[.]{0,1}\d+)?$");
-        private List<Point> allMeasuredWGFPoints = new List<Point>();
-        private List<Point> allMeasuredCommonPoints = new List<Point>();
 
-        public IReadOnlyList<Point> AllMeasuredWGFPoints { get { return this.allMeasuredWGFPoints.AsReadOnly(); } }
-        public IReadOnlyList<Point> AllMeasuredCommonPoints { get { return this.allMeasuredCommonPoints.AsReadOnly(); } }
+        public List<Point> AllMeasuredWGFPoints { get; set; } = new List<Point>();
+        public List<Point> AllMeasuredCommonPoints { get; set; } = new List<Point>();
         public List<string> Errors { get; set; } = new List<string>();
-        public TotalStation[] TotalStations { get; private set; }
+        public List<TotalStation> TotalStations { get; set; } = new List<TotalStation>();
+
 
         public string GetDpiData()
         {
@@ -43,9 +43,9 @@ namespace TotalSimulator
             return stringBuilder.ToString();
         }
 
+
         public void SetMeasurements(string measuredPointsData)
         {
-            var totalStations = new List<TotalStation>();
             var currentRow = 0;
             var rawStationsData = measuredPointsData.Split('*');
             foreach (var rawStationData in rawStationsData)
@@ -70,15 +70,15 @@ namespace TotalSimulator
                     }
                     if (point.isWGFPoint)
                     {
-                        if(!allMeasuredWGFPoints.Contains(point, new PointComparer()))
+                        if(!AllMeasuredWGFPoints.Contains(point, new PointComparer()))
                         {
-                            allMeasuredWGFPoints.Add(point);
+                            AllMeasuredWGFPoints.Add(point);
                         }
                     }
                     else
                     {
-                        if (allMeasuredCommonPoints.Select(p => p.Number).Contains(point.Number)) this.Errors.Add($"Подробна точка {point.Number} е измерена повече от веднъж");
-                        allMeasuredCommonPoints.Add(point);
+                        if (AllMeasuredCommonPoints.Select(p => p.Number).Contains(point.Number)) this.Errors.Add($"Подробна точка {point.Number} е измерена повече от веднъж");
+                        AllMeasuredCommonPoints.Add(point);
                     }
                     if (totalStation == null)
                     {
@@ -99,11 +99,10 @@ namespace TotalSimulator
                     if(this.Errors.Count() == 0)
                     {
                         totalStation.Measure(stationMeasuredPoints);
-                        totalStations.Add(totalStation);
+                        this.TotalStations.Add(totalStation);
                     }
                 }
             }
-            this.TotalStations = totalStations.ToArray();
         }
 
         protected Point ConvertDataToPoint(string pointData)

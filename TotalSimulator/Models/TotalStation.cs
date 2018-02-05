@@ -8,16 +8,15 @@ namespace TotalSimulator.Models
 {
     public class TotalStation: ITotalStation
     {
-        public IEnumerable<Point> MeasuredPoints { get { return this.measuredPoints.AsReadOnly(); } }
-        private List<Point> measuredPoints = new List<Point>();
-        private List<Measure> measurements = new List<Measure>();
+        public List<Point> measuredPoints = new List<Point>();
+        public List<Measure> measurements = new List<Measure>();
 
-        private double signalHeight = 1.3;
-        private readonly Point position = new Point();
-        private readonly double stationHeight;
-        private readonly float maxAngleError;
-        private readonly float maxDistError;
-        private const int padding = 10;
+        public double signalHeight = 1.3;
+        public Point position = new Point();
+        public double stationHeight;
+        public float maxAngleError;
+        public float maxDistError;
+        public const int padding = 10;
 
         public Point opticsCenter {
             get
@@ -31,6 +30,10 @@ namespace TotalSimulator.Models
             this.stationHeight = stationHeight;
             this.maxAngleError = maxAngleError;
             this.maxDistError = maxDistError;
+        }
+        public TotalStation(): this(new Point(), 0,0,0)
+        {
+
         }
 
         public void Measure(IEnumerable<Point> points)
@@ -59,7 +62,7 @@ namespace TotalSimulator.Models
             }
         }
 
-        protected void SetRandomErrors(Measure measure)
+        protected void SetRandomErrors()
         {
             //TODO - implement later
         }
