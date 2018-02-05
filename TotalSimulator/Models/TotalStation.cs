@@ -12,7 +12,7 @@ namespace TotalSimulator.Models
         public List<Measure> measurements = new List<Measure>();
 
         public double signalHeight = 1.3;
-        public Point position = new Point();
+        public Point Position { get; set; } = new Point();
         public double stationHeight;
         public float maxAngleError;
         public float maxDistError;
@@ -21,12 +21,12 @@ namespace TotalSimulator.Models
         public Point opticsCenter {
             get
             {
-                return new Point(this.position.Number, this.position.North, this.position.East, this.position.Z + this.stationHeight);
+                return new Point(this.Position.Number, this.Position.North, this.Position.East, this.Position.Z + this.stationHeight);
             }
         }
         public TotalStation(Point position, double stationHeight, float maxAngleError, float maxDistError)
         {
-            this.position = position;
+            this.Position = position;
             this.stationHeight = stationHeight;
             this.maxAngleError = maxAngleError;
             this.maxDistError = maxDistError;
@@ -52,12 +52,12 @@ namespace TotalSimulator.Models
                     ZAngle = GeometryEngine.GetZAngle(this.opticsCenter, p),
                     SignalHeight = this.signalHeight
                 };
-                measurements.Add(firstMeasure);
+                this.measurements.Add(firstMeasure);
                 if (p.isWGFPoint)
                 {
                     secondMeasure = new Measure(firstMeasure);
                     secondMeasure.FlipBothWays();
-                    measurements.Add(secondMeasure);
+                    this.measurements.Add(secondMeasure);
                 }
             }
         }
@@ -66,12 +66,24 @@ namespace TotalSimulator.Models
         {
             //TODO - implement later
         }
+
+        public void ReMeasureCommonPoints()
+        {
+            var commonPoints = this.measuredPoints.Where(p => !p.isWGFPoint);
+            var commonPointNumbers = commonPoints.Select(p => p.Number);
+            var commonMeasures = this.measurements.Where(m => commonPointNumbers.Contains(m.Number));
+            foreach (var measure in commonMeasures)
+            {
+                this.measurements.Remove(measure);
+            }
+            this.Measure(commonPoints);
+        }
         
         public string GetDpiData()
         {
             
             var stringBuilder = new StringBuilder();
-            var stationString = $"{this.position.Number} {this.stationHeight,padding:0.###}";
+            var stationString = $"{this.Position.Number} {this.stationHeight,padding:0.###}";
             var stationStringLen = 0;
             stringBuilder.Append(stationString);
             var lenth = this.measurements.Count();

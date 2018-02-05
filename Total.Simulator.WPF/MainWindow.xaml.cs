@@ -93,11 +93,13 @@ namespace Total.Simulator.WPF
 
         private void ReadGeosn_Click(object sender, RoutedEventArgs e)
         {
-            var filename = this.BrowseFile(".geosn", "geosn Files (*.geosn)|*.geosn");
+            var filename = this.BrowseFile(".lis", "lis Files (*.lis)|*.lis");
             if (string.IsNullOrEmpty(filename))
             {
                 return;
             }
+            var geosnFileData = File.ReadAllLines(filename, Encoding.GetEncoding("windows-1251"));
+            this.DataTextBox.Text = string.Join("\n", this.totalSimulator.SetNewWGF(geosnFileData).Select(x => x.Position.Number.ToString() + " станция е успешно подновена"));
         }
 
         //TODO implement another 4 button click events

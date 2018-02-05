@@ -13,6 +13,7 @@ namespace TotalSimulator
     [Serializable]
     public class TotalSimulator : ITotalSimulator
     {
+        private Regex geosnWGFPointRegex = new Regex(@"^(\d+) {1}(\d+[.]{0,1}\d+) {1}(\d+[.]{0,1}\d+) {1}(\d+[.]{0,1}\d+)");
         private Regex measureRegex = new Regex(@"^(\d+) {1}(\d+[.]{0,1}\d+) {1}(\d+[.]{0,1}\d+) {0,1}(\d+[.]{0,1}\d+)?$");
 
         public List<Point> AllMeasuredWGFPoints { get; set; } = new List<Point>();
@@ -117,6 +118,49 @@ namespace TotalSimulator
                     double.Parse(match.Groups[4].Value));
             }
             return null;
+        }
+
+        public IEnumerable<ITotalStation> SetNewWGF(string[] geosnFileData)
+        {
+            string stationPointName = "";
+            string missingZeros = "";
+            var totalStaionsSet = new List<ITotalStation>();
+            for (int i = 0; i < geosnFileData.Length; i++)
+            {
+                if (geosnFileData[i].Contains("Станция:"))
+                {
+                    stationPointName = geosnFileData[i].Substring(geosnFileData[i].IndexOf(":") + 1, geosnFileData[i].IndexOf("(") - geosnFileData[i].IndexOf(":") - 1).Trim();
+                    missingZeros = new string('0', Math.Abs(stationPointName.Length - 6));
+                }
+                else if (!string.IsNullOrEmpty(stationPointName) && geosnFileData[i].Contains(stationPointName))
+                {
+                    geosnFileData[i] = geosnFileData[i]
+                        .Replace("тт", "10" + missingZeros)
+                        .Replace("пт", "11" + missingZeros)
+                        .Replace("от", "12" + missingZeros)
+                        .Replace("лт", "13" + missingZeros)
+                        .Replace("нр", "14" + missingZeros);
+                    geosnFileData[i] = Regex.Replace(geosnFileData[i], @"\(\d\)", "");
+                    geosnFileData[i] = Regex.Replace(geosnFileData[i], @"\s+", " ");
+                    var match = geosnWGFPointRegex.Match(geosnFileData[i].Trim());
+                    if (match.Success)
+                    {
+                        var point = new Point(
+                            int.Parse(match.Groups[1].Value),
+                            double.Parse(match.Groups[2].Value),
+                            double.Parse(match.Groups[3].Value),
+                            double.Parse(match.Groups[4].Value));
+                        var station = this.TotalStations.Where(s => s.Position.Number == point.Number).FirstOrDefault();
+                        station.Position = point;
+                        totalStaionsSet.Add(station);
+                    }
+                }
+            }
+            foreach (var totalStation in totalStaionsSet)
+            {
+                totalStation.ReMeasureCommonPoints();
+            }
+            return totalStaionsSet;
         }
     }
 }

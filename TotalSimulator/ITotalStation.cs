@@ -10,6 +10,8 @@ namespace TotalSimulator
     public interface ITotalStation
     {
         void Measure(IEnumerable<Point> points);
+        Point Position { get; set; }
+        void ReMeasureCommonPoints();
     }
 
 }
